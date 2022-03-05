@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">AndersenHomeTaskFragments5</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="label_first_name">Имя:</string>
+    <string name="default_first_name">Тут будет имя</string>
+    <string name="label_last_name">Фамилия:</string>
+    <string name="default_last_name">Тут будет фамилия</string>
+    <string name="label_number">Номер:</string>
+    <string name="default_number">Тут будет номер</string>
+    <string name="save">Save</string>
+    <string name="error_empty_field">Поле не может быть пустым</string>
+    <string name="firstnamecontact_default">FirstNameContact</string>
+    <string name="lastnamecontact_default">LastNameContact</string>
+    <string name="numbercontact_default">NumberContact</string>
+    <string name="error_load_image">Ошибка загрузки картинки</string>
+    <string name="pathImage">https://picsum.photos/id/1$position/200/200</string>
+    <string name="delete">DELETE</string>
+    <string name="delete_dialog_title">DELETE CONTACTS</string>
+    <string name="delete_dialog_msg">Delete contact: ${requireArguments().getString(FIRST_NAME)} ${requireArguments().getString(LAST_NAME)}?</string>
+</resources>
