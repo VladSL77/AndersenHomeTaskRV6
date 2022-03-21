@@ -25,6 +25,7 @@ import com.squareup.picasso.Picasso
 class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
     DialogFragmentDelete.DeleteButtonClickedListener {
 
+    private var index = 0
     private lateinit var infoClickListener: InfoClickListener
     private lateinit var list: MutableList<Contact>
     private lateinit var newList: MutableList<Contact>
@@ -34,12 +35,13 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        infoClickListener = context as InfoClickListener
+        if (context is InfoClickListener) infoClickListener = context
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         list = requireArguments().getParcelableArrayList(KEY_LIST)!!
+        index = requireArguments().getInt(KEY_INDEX)
         newList = mutableListOf()
     }
 
@@ -48,6 +50,7 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
         rvContact = requireView().findViewById(R.id.rvContacts)
         rvContact.layoutManager = LinearLayoutManager(requireContext())
         contactAdapter = AdapterContacts(list, infoClickListener, childFragmentManager)
+        rvContact.scrollToPosition(index)
         rvContact.adapter = contactAdapter
         rvContact.addItemDecoration(MyItemDecoration())
         svName = requireView().findViewById(R.id.search_name)
@@ -149,6 +152,7 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putParcelableArrayList(KEY_LIST, ArrayList<Parcelable>(list))
+        outState.putInt(KEY_INDEX, index)
     }
 
     override fun onBackPressedClicked(): Boolean = false
@@ -181,7 +185,7 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
         override fun getNewListSize() = newList.size
 
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return true
+            return oldList[oldItemPosition].id == newList[newItemPosition].id
         }
 
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
@@ -193,7 +197,6 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
 
     class MyItemDecoration : RecyclerView.ItemDecoration() {
 
-        private var dividerHeight = DIV_HEIGHT
         private var paint = Paint()
 
         override fun getItemOffsets(
@@ -204,8 +207,8 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
         ) {
             super.getItemOffsets(outRect, view, parent, state)
             if (parent.getChildAdapterPosition(view) != 0) {
-                outRect.top = RV_MARGIN_10
-                outRect.bottom = RV_MARGIN_10
+                outRect.top = view.resources.getDimension(R.dimen.rv_margin_10).toInt()
+                outRect.bottom = view.resources.getDimension(R.dimen.rv_margin_10).toInt()
             }
         }
 
@@ -226,7 +229,7 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
                 if (index == 0) {
                     continue
                 }
-                divTop = view.top - dividerHeight
+                divTop = view.top - view.resources.getDimension(R.dimen.div_height_2)
                 divLeft = parent.paddingLeft.toFloat()
                 divBottom = view.top.toFloat()
                 divRight = (parent.width - parent.paddingRight).toFloat()
@@ -238,13 +241,13 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
     companion object {
 
         private const val KEY_LIST = "KEY_LIST"
+        private const val KEY_INDEX = "KEY_INDEX"
         const val FRAGMENT_LIST_TAG = "FRAGMENT_LIST_TAG"
-        private const val DIV_HEIGHT = 2F
-        private const val RV_MARGIN_10 = 10
 
-        fun newInstance(list: MutableList<Contact>) = FragmentList().also {
+        fun newInstance(list: MutableList<Contact>, index: Int) = FragmentList().also {
             it.arguments = Bundle().apply {
                 putParcelableArrayList(KEY_LIST, ArrayList<Parcelable>(list))
+                putInt(KEY_INDEX, index)
             }
         }
     }

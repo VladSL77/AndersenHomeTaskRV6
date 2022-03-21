@@ -31,7 +31,7 @@ class FragmentDetail : Fragment(R.layout.detail_fragment), BackPressedListener {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        saveButtonClickListener = context as SaveButtonClickListener
+        if (context is SaveButtonClickListener) saveButtonClickListener = context
     }
 
     private fun init() {
@@ -58,71 +58,27 @@ class FragmentDetail : Fragment(R.layout.detail_fragment), BackPressedListener {
 
         init()
         picasso.load(list[index].pathImage).into(ivDetail)
-        changeInfo()
         view.findViewById<Button>(R.id.buttonSave).setOnClickListener {
-            list[index].firstName = newFirstName
-            list[index].lastName = newLastName
-            list[index].phoneNumber = newNumber
-            saveButtonClickListener.onSaveButtonClicked(list)
+            if (etFirstName.text.toString() != "" && etLastName.text.toString() != "" && etNumber.text.toString() != "") {
+                list[index].firstName = etFirstName.text.toString()
+                list[index].lastName = etLastName.text.toString()
+                list[index].phoneNumber = etNumber.text.toString()
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.error_empty_field),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            saveButtonClickListener.onSaveButtonClicked(list, index)
         }
 
     }
 
     interface SaveButtonClickListener {
-        fun onSaveButtonClicked(list: MutableList<Contact>)
+        fun onSaveButtonClicked(list: MutableList<Contact>, index: Int)
     }
 
-    private fun changeInfo() {
-
-        etFirstName.setOnKeyListener(View.OnKeyListener { _, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
-                if (etFirstName.text.toString() != "") {
-                    newFirstName = etFirstName.text.toString()
-                } else {
-                    Toast.makeText(
-                        requireContext(),
-                        getString(R.string.error_empty_field),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-                return@OnKeyListener true
-            }
-            false
-        })
-
-        etLastName.setOnKeyListener(View.OnKeyListener { _, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
-                if (etLastName.text.toString() != "") {
-                    newLastName = etLastName.text.toString()
-                } else {
-                    Toast.makeText(
-                        requireContext(),
-                        getString(R.string.error_empty_field),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-                return@OnKeyListener true
-            }
-            false
-        })
-
-        etNumber.setOnKeyListener(View.OnKeyListener { _, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
-                if (etNumber.text.toString() != "") {
-                    newNumber = etNumber.text.toString()
-                } else {
-                    Toast.makeText(
-                        requireContext(),
-                        getString(R.string.error_empty_field),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-                return@OnKeyListener true
-            }
-            false
-        })
-
-    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

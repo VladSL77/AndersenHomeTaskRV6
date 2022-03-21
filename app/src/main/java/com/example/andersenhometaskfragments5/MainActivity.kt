@@ -11,6 +11,7 @@ class MainActivity : AppCompatActivity(), FragmentList.InfoClickListener,
     FragmentDetail.SaveButtonClickListener {
 
     private lateinit var list: MutableList<Contact>
+    private var index = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,7 +21,7 @@ class MainActivity : AppCompatActivity(), FragmentList.InfoClickListener,
 
         if (supportFragmentManager.findFragmentByTag(FRAGMENT_LIST_TAG) == null) {
             supportFragmentManager.beginTransaction().run {
-                replace(R.id.fragmentContainer1, FragmentList.newInstance(list), FRAGMENT_LIST_TAG)
+                replace(R.id.fragmentContainer1, FragmentList.newInstance(list, index), FRAGMENT_LIST_TAG)
                 commit()
             }
         }
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity(), FragmentList.InfoClickListener,
         var contact: Contact
         for (position in 0..110) {
             contact = Contact()
+            contact.id = position
             contact.firstName = "FirstName Contact$position"
             contact.lastName = "LastName Contact$position"
             contact.phoneNumber = "PhoneNumber Contact$position"
@@ -48,9 +50,9 @@ class MainActivity : AppCompatActivity(), FragmentList.InfoClickListener,
         }
     }
 
-    override fun onSaveButtonClicked(list: MutableList<Contact>) {
+    override fun onSaveButtonClicked(list: MutableList<Contact>, index: Int) {
         supportFragmentManager.beginTransaction().run {
-            replace(R.id.fragmentContainer1, FragmentList.newInstance(list), FRAGMENT_LIST_TAG)
+            replace(R.id.fragmentContainer1, FragmentList.newInstance(list, index), FRAGMENT_LIST_TAG)
             commit()
         }
     }
