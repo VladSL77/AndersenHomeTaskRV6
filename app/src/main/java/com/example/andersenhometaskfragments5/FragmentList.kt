@@ -1,5 +1,6 @@
 package com.example.andersenhometaskfragments5
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -7,6 +8,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.Parcelable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +29,7 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
 
     private var index = 0
     private lateinit var infoClickListener: InfoClickListener
-    private lateinit var list: MutableList<Contact>
+    private lateinit var listFragment: MutableList<Contact>
     private lateinit var newList: MutableList<Contact>
     private lateinit var rvContact: RecyclerView
     private lateinit var contactAdapter: AdapterContacts
@@ -40,7 +42,7 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        list = requireArguments().getParcelableArrayList(KEY_LIST)!!
+        listFragment = requireArguments().getParcelableArrayList(KEY_LIST)!!
         index = requireArguments().getInt(KEY_INDEX)
         newList = mutableListOf()
     }
@@ -49,8 +51,7 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
         super.onViewCreated(view, savedInstanceState)
         rvContact = requireView().findViewById(R.id.rvContacts)
         rvContact.layoutManager = LinearLayoutManager(requireContext())
-        contactAdapter = AdapterContacts(list, infoClickListener, childFragmentManager)
-        rvContact.scrollToPosition(index)
+        contactAdapter = AdapterContacts(listFragment, infoClickListener, childFragmentManager)
         rvContact.adapter = contactAdapter
         rvContact.addItemDecoration(MyItemDecoration())
         svName = requireView().findViewById(R.id.search_name)
@@ -66,13 +67,13 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
     }
 
     class AdapterContacts(
-        var list: MutableList<Contact>,
+        private var listAdapter: MutableList<Contact>,
         private val infoClickListener: InfoClickListener,
         private val childFM: FragmentManager
     ) : RecyclerView.Adapter<AdapterContacts.MyViewHolder>(), Filterable {
 
         private val picasso = Picasso.get()
-        var contactFilterList: MutableList<Contact> = list
+        var contactFilterList: MutableList<Contact> = listAdapter
 
         class MyViewHolder(
             itemView: View,
@@ -92,13 +93,13 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
                 ivImage = itemView.findViewById(R.id.ivContactItem)
                 itemView.run {
                     setOnClickListener {
-                        infoClickListener.onInfoClicked(list, position)
+                        infoClickListener.onInfoClicked(list, absoluteAdapterPosition)
                     }
                     setOnLongClickListener {
                         DialogFragmentDelete.newInstance(
                             tvFirstName!!.text.toString(),
                             tvLastName!!.text.toString(),
-                            position
+                            absoluteAdapterPosition
                         ).show(childFM, DialogFragmentDelete.DIALOG_FRAGMENT_DELETE_TAG)
                         true
                     }
@@ -109,7 +110,7 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
             val itemView =
                 LayoutInflater.from(parent.context).inflate(R.layout.contact_item, parent, false)
-            return MyViewHolder(itemView, infoClickListener, childFM, list)
+            return MyViewHolder(itemView, infoClickListener, childFM, listAdapter)
         }
 
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
@@ -126,10 +127,10 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
                 override fun performFiltering(p0: CharSequence?): FilterResults {
                     val charSearch = p0.toString()
                     contactFilterList = if (charSearch.isEmpty()) {
-                        list
+                        listAdapter
                     } else {
                         val resultList: MutableList<Contact> = mutableListOf()
-                        for (row in list) {
+                        for (row in listAdapter) {
                             if (row.firstName?.lowercase()?.contains(charSearch.lowercase()) == true
                                 || row.lastName?.lowercase()?.contains(charSearch.lowercase()) == true
                             ) resultList.add(row)
@@ -141,6 +142,7 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
                     return filterResults
                 }
 
+                @SuppressLint("NotifyDataSetChanged")
                 override fun publishResults(p0: CharSequence?, p1: FilterResults?) {
                     contactFilterList = p1?.values as MutableList<Contact>
                     notifyDataSetChanged()
@@ -151,7 +153,7 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putParcelableArrayList(KEY_LIST, ArrayList<Parcelable>(list))
+        outState.putParcelableArrayList(KEY_LIST, ArrayList<Parcelable>(listFragment))
         outState.putInt(KEY_INDEX, index)
     }
 
@@ -165,14 +167,12 @@ class FragmentList : Fragment(R.layout.list_fragment), BackPressedListener,
     }
 
     override fun onDeleteButtonClicked(index: Int) {
-        newList = list.toMutableList()
+        newList = listFragment.toMutableList()
         newList.removeAt(index)
-        val contactDiffUtilCallback = ContactDiffUtilCallback(list, newList)
+        val contactDiffUtilCallback = ContactDiffUtilCallback(listFragment, newList)
         val contactDiffResult = DiffUtil.calculateDiff(contactDiffUtilCallback)
-        contactAdapter.list = newList
         contactDiffResult.dispatchUpdatesTo(contactAdapter)
-        list = newList
-        contactAdapter.contactFilterList = newList
+        listFragment.removeAt(index)
     }
 
     class ContactDiffUtilCallback(

@@ -3,7 +3,6 @@ package com.example.andersenhometaskfragments5
 import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
-import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
@@ -55,7 +54,6 @@ class FragmentDetail : Fragment(R.layout.detail_fragment), BackPressedListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         init()
         picasso.load(list[index].pathImage).into(ivDetail)
         view.findViewById<Button>(R.id.buttonSave).setOnClickListener {
@@ -70,15 +68,13 @@ class FragmentDetail : Fragment(R.layout.detail_fragment), BackPressedListener {
                     Toast.LENGTH_LONG
                 ).show()
             }
-            saveButtonClickListener.onSaveButtonClicked(list, index)
+            saveButtonClickListener.onSaveButtonClicked(list)
         }
-
     }
 
     interface SaveButtonClickListener {
-        fun onSaveButtonClicked(list: MutableList<Contact>, index: Int)
+        fun onSaveButtonClicked(list: MutableList<Contact>)
     }
-
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

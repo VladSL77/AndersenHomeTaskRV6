@@ -50,9 +50,10 @@ class MainActivity : AppCompatActivity(), FragmentList.InfoClickListener,
         }
     }
 
-    override fun onSaveButtonClicked(list: MutableList<Contact>, index: Int) {
+    override fun onSaveButtonClicked(list: MutableList<Contact>) {
         supportFragmentManager.beginTransaction().run {
-            replace(R.id.fragmentContainer1, FragmentList.newInstance(list, index), FRAGMENT_LIST_TAG)
+            replace(R.id.fragmentContainer1, supportFragmentManager.findFragmentByTag(
+                FRAGMENT_LIST_TAG)!!, FRAGMENT_LIST_TAG)
             commit()
         }
     }
